@@ -42,5 +42,13 @@
 		"vite-plugin-style-import": "^2.0.0",
 		"vitest": "^4.0.16",
 		"vue-tsc": "^3.2.2"
-	}
+	},
+	"lint-staged": {
+    "*.{ts,js}": [
+      "prettier --write"
+    ],
+    "*.{css,md}": [
+      "prettier --write"
+    ]
+  }
 }
