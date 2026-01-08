@@ -3,8 +3,7 @@
   "include": [
     "env.d.ts", 
     "src/**/*", 
-    "src/**/*.vue",
-    "src/vueform.config.ts"
+    "src/**/*.vue"
   ],
   "exclude": ["src/**/__tests__/*"],
   "compilerOptions": {
