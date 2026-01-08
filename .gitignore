@@ -1,6 +1,7 @@
 # Environment and build
 *.txt
 dist/
+.env
 .env.dev
 .env.prod
 
