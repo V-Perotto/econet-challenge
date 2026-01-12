@@ -99,13 +99,36 @@ watch(() => route.params.id, (newId) => {
   }
 });
 
+watch(() => form.name, (newValue) => {
+  if (newValue.trim().length > 0) {
+    errors.name = '';
+  } else {
+    errors.name = 'O nome é obrigatório.';
+  }
+});
+
+watch(() => form.cnpj, (newValue) => {
+  if (newValue.length === 0) {
+    errors.cnpj = 'O CNPJ é obrigatório.';
+  } else if (!validateCNPJ(newValue)) {
+    errors.cnpj = 'CNPJ inválido ou inexistente.';
+  } else {
+    errors.cnpj = '';
+  }
+});
+
 onMounted(async () => {
   if (isEditing.value) {
     try {
-      const response = await apiClient.get(`/companies/${route.params.id}`);
+      const id = Array.isArray(route.params.id) ? route.params.id[0] : route.params.id;
+
+      const response = await apiClient.get(`/companies/${id}`);
+
       Object.assign(form, response.data);
     } catch (err) {
       toast.error('Erro ao carregar dados da empresa.');
+      toast.info('Redirecionando para a página principal...')
+      setTimeout(() => router.push('/'), 2000);
     }
   }
 });
@@ -144,9 +167,10 @@ onMounted(async () => {
                 class="form-control form-control-lg"
                 :class="{ 'is-invalid': errors.name }"
                 placeholder="Ex: Minha Empresa LTDA"
-                required
               />
-              <div v-if="errors.name" class="invalid-feedback">{{ errors.name }}</div>
+              <Transition name="error-slide">
+                <div v-if="errors.name" class="invalid-feedback">{{ errors.name }}</div>
+              </Transition>
             </div>
 
             <div class="col-md-4">
@@ -159,9 +183,10 @@ onMounted(async () => {
                 class="form-control form-control-lg"
                 :class="{ 'is-invalid': errors.cnpj }"
                 placeholder="00.000.000/0000-00"
-                required
               />
-              <div v-if="errors.cnpj" class="invalid-feedback">{{ errors.cnpj }}</div>
+              <Transition name="error-slide">
+                <div v-if="errors.cnpj" class="invalid-feedback">{{ errors.cnpj }}</div>
+              </Transition>
             </div>
 
             <div class="col-12 mt-4">
@@ -218,5 +243,18 @@ onMounted(async () => {
 }
 .breadcrumb-item a:hover {
   text-decoration: underline;
+}
+
+.error-slide-enter-active, .error-slide-leave-active {
+  transition: all 0.3s ease-out;
+}
+.error-slide-enter-from, .error-slide-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+  margin-bottom: -20px;
+}
+
+.invalid-feedback {
+  display: block; 
 }
 </style>
