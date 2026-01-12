@@ -1,3 +1,6 @@
+<script lang="ts">  
+import { Users } from 'lucide-vue-next'
+</script>
 <template>
   <div class="card shadow-sm border-1 mb-5 placeholder-glow">
     <div class="card-body p-4">
