@@ -1,90 +1,106 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue';
-import { Plus, Eye, Pencil, Trash2, Building2, RefreshCcw } from 'lucide-vue-next';
-import { useRouter } from 'vue-router';
-import apiClient from '../plugins/ApiClient';
-import type { ICompany } from '@/interfaces/ICompany';
+import { ref, onMounted, watch } from 'vue'
+import {
+  Plus,
+  Eye,
+  Pencil,
+  Trash2,
+  Building2,
+  RefreshCcw,
+} from 'lucide-vue-next'
+import { useRouter } from 'vue-router'
+import apiClient from '../plugins/ApiClient'
+import type { ICompany } from '@/interfaces/ICompany'
 import { useToast } from 'vue-toastification'
-import PaginationBar from '@/components/PaginationBar.vue';
-import CompanyDeleteModal from '@/components/CompanyDeleteModal.vue';
+import PaginationBar from '@/components/PaginationBar.vue'
+import CompanyDeleteModal from '@/components/CompanyDeleteModal.vue'
+import CompanyListLoading from '@/components/loading/CompanyListLoading.vue'
 
 const toast = useToast()
-const router = useRouter();
+const router = useRouter()
 
-const companies = ref<Array<ICompany>>([]);
-const loading = ref(false);
-const error = ref<string | null>(null);
-const currentPage = ref(1);
+const companies = ref<Array<ICompany>>([])
+const loading = ref(false)
+const error = ref<string | null>(null)
 
-const totalItems = ref(0);
-const itemsPerPage = 5;
+const currentPage = ref(1)
+const totalItems = ref(0)
+const itemsPerPage = 15
 
-const isDeleteModalOpen = ref(false);
-const companyIdToDelete = ref<string | null>(null);
-const isDeleting = ref(false);
+const isDeleteModalOpen = ref(false)
+const companyIdToDelete = ref<string | null>(null)
+const isDeleting = ref(false)
 
 const loadCompanies = async (page: number) => {
-  const pageNumber = typeof page === 'number' ? page : 1;
-  loading.value = true;
-  error.value = '';
-  
+  const pageNumber = typeof page === 'number' ? page : 1
+  loading.value = true
+  error.value = ''
+
+  const startTime = Date.now()
+
   try {
-    const response = await apiClient.get("/companies", {
+    const response = await apiClient.get('/companies', {
       params: {
         _page: pageNumber,
         _per_page: itemsPerPage,
-      }
-    });
+      },
+    })
 
-    const { items, data } = response.data;
-    totalItems.value = items;
-    companies.value = data;
-    currentPage.value = pageNumber;
+    const duration = Date.now() - startTime
+    const minDelay = 500
+
+    if (duration < minDelay) {
+      await new Promise(resolve => setTimeout(resolve, minDelay - duration))
+    }
+
+    const { items, data } = response.data
+    totalItems.value = items
+    companies.value = data
+    currentPage.value = pageNumber
   } catch (err) {
-    error.value = "Não foi possível carregar a lista de empresas. Verifique sua conexão.";
-    toast.error(error.value);
-    console.error(err);
+    error.value =
+      'Não foi possível carregar a lista de empresas. Verifique sua conexão.'
+    toast.error(error.value)
+    console.error(err)
   } finally {
-    loading.value = false;
+    loading.value = false
   }
-};
+}
 
 const openDeleteModal = (id: string) => {
-  companyIdToDelete.value = id;
-  isDeleteModalOpen.value = true;
-};
+  companyIdToDelete.value = id
+  isDeleteModalOpen.value = true
+}
 
 const confirmDelete = async () => {
-  if (!companyIdToDelete.value) return;
+  if (!companyIdToDelete.value) return
 
-  isDeleting.value = true;
+  isDeleting.value = true
   try {
-    await apiClient.delete(`/companies/${companyIdToDelete.value}`);
-    toast.success("Empresa removida com sucesso!");
-    loadCompanies(currentPage.value);
+    await apiClient.delete(`/companies/${companyIdToDelete.value}`)
+    toast.success('Empresa removida com sucesso!')
+    await loadCompanies(currentPage.value)
   } catch (err) {
-    toast.error("Erro ao excluir empresa.");
+    toast.error('Erro ao excluir empresa.')
   } finally {
-    isDeleting.value = false;
-    isDeleteModalOpen.value = false;
-    companyIdToDelete.value = null;
+    isDeleting.value = false
+    isDeleteModalOpen.value = false
+    companyIdToDelete.value = null
   }
-};
+}
 
-const viewDetails = (id: string) => router.push(`/company/${id}/details`);
-const editCompany = (id: string) => router.push(`/company/${id}/edit`);
+const viewDetails = (id: string) => router.push(`/company/${id}/details`)
+const editCompany = (id: string) => router.push(`/company/${id}/edit`)
 
 const formatCNPJ = (val: string) => {
-  return val.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, "$1.$2.$3/$4-$5");
-};
+  return val.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5')
+}
 
-onMounted(() => loadCompanies(currentPage.value));
+onMounted(() => loadCompanies(currentPage.value))
 
-watch(currentPage, (newPage) => {
-  if (companies.value && companies.value.length > 0) {
-    loadCompanies(newPage);
-  }
-});
+watch(currentPage, newPage => {
+  if (companies.value && companies.value.length > 0) loadCompanies(newPage)
+})
 </script>
 
 <template>
@@ -96,7 +112,11 @@ watch(currentPage, (newPage) => {
       </button>
     </div>
 
-    <div v-if="error" class="alert alert-danger d-flex justify-content-between align-items-center" role="alert">
+    <div
+      v-if="error"
+      class="alert alert-danger d-flex justify-content-between align-items-center"
+      role="alert"
+    >
       <div class="mb-0">
         <p class="mb-0">{{ error }}</p>
       </div>
@@ -120,18 +140,35 @@ watch(currentPage, (newPage) => {
             <td>{{ company.name }}</td>
             <td>{{ formatCNPJ(company.cnpj) }}</td>
             <td>
-              <span :class="['badge', company.active ? 'bg-success' : 'bg-secondary']">
+              <span
+                :class="[
+                  'badge',
+                  company.active ? 'bg-success' : 'bg-secondary',
+                ]"
+              >
                 {{ company.active ? 'Ativa' : 'Inativa' }}
               </span>
             </td>
             <td class="text-end">
-              <button class="btn btn-light" @click="viewDetails(company.id)" title="Visualizar">
+              <button
+                class="btn btn-light"
+                @click="viewDetails(company.id)"
+                title="Visualizar"
+              >
                 <Eye :size="20" />
               </button>
-              <button class="btn btn-light mx-2" @click="editCompany(company.id)" title="Editar">
+              <button
+                class="btn btn-light mx-2"
+                @click="editCompany(company.id)"
+                title="Editar"
+              >
                 <Pencil :size="20" />
               </button>
-              <button class="btn btn-outline-danger" @click="openDeleteModal(company.id)" title="Excluir">
+              <button
+                class="btn btn-outline-danger"
+                @click="openDeleteModal(company.id)"
+                title="Excluir"
+              >
                 <Trash2 :size="20" />
               </button>
             </td>
@@ -144,13 +181,12 @@ watch(currentPage, (newPage) => {
         </tbody>
       </table>
 
-      <div v-else class="p-5 text-center">
-        <div class="spinner-border text-primary" role="status"></div>
-        <p class="mt-2">Carregando empresas...</p>
+      <div v-else class="table-responsive">
+        <CompanyListLoading />
       </div>
     </div>
-    
-    <CompanyDeleteModal 
+
+    <CompanyDeleteModal
       :show="isDeleteModalOpen"
       :loading="isDeleting"
       title="Excluir Empresa"
@@ -159,12 +195,12 @@ watch(currentPage, (newPage) => {
       @cancel="isDeleteModalOpen = false"
     />
 
-    <PaginationBar 
+    <PaginationBar
       v-if="totalItems > itemsPerPage"
       v-model="currentPage"
       :total-items="totalItems"
       :items-per-page="itemsPerPage"
-      @change="(page) => loadCompanies(page)"
+      @change="page => loadCompanies(page)"
     />
   </div>
 </template>

@@ -1,80 +1,110 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import { ArrowLeft, UserPlus, Trash2, Building2, Users } from 'lucide-vue-next';
-import apiClient from '../plugins/ApiClient';
-import UserModal from '@/components/UserModal.vue';
+import { ref, onMounted, computed, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { ArrowLeft, UserPlus, Trash2, Building2, Users } from 'lucide-vue-next'
+import apiClient from '../plugins/ApiClient'
+import UserModal from '@/components/UserModal.vue'
 import { useToast } from 'vue-toastification'
-import type { ICompany } from '@/interfaces/ICompany';
-import type { IUser } from '@/interfaces/IUser';
-import CompanyUserDeleteModal from '@/components/CompanyUserDeleteModal.vue';
+import type { ICompany } from '@/interfaces/ICompany'
+import type { IUser } from '@/interfaces/IUser'
+import CompanyUserDeleteModal from '@/components/CompanyUserDeleteModal.vue'
+import PaginationBar from '@/components/PaginationBar.vue'
+import CompanyDetailsLoading from '@/components/loading/CompanyDetailsLoading.vue'
 
-const toast = useToast();
-const route = useRoute();
-const router = useRouter();
+const toast = useToast()
+const route = useRoute()
+const router = useRouter()
 
-const isDeleteModalOpen = ref(false);
-const userIdToDelete = ref<string | null>(null);
-const isDeleting = ref(false);
+const isDeleteModalOpen = ref(false)
+const userIdToDelete = ref<string | null>(null)
+const isDeleting = ref(false)
 
 const companyId = computed(() => {
-  const id = route.params.id;
-  return Array.isArray(id) ? String(id[0]) : String(id);
-});
-const company = ref<ICompany | null>(null);
-const users = ref<Array<IUser>>([]);
-const loading = ref(true);
-const showModal = ref(false);
+  const id = route.params.id
+  return Array.isArray(id) ? String(id[0]) : String(id)
+})
+const company = ref<ICompany | null>(null)
+const users = ref<Array<IUser>>([])
+const loading = ref(true)
+const showModal = ref(false)
 
-const fetchData = async () => {
-  loading.value = true;
+const currentPage = ref(1)
+const totalItems = ref(0)
+const itemsPerPage = 15
+
+const loadCompanyDetailsAndUsers = async (page: number) => {
+  const pageNumber = typeof page === 'number' ? page : 1
+  loading.value = true
+
+  const startTime = Date.now()
+
   try {
-    const id = companyId.value;
-    console.log("id", id);
-    
+    const id = companyId.value
+
     const [companyRes, usersRes] = await Promise.all([
       apiClient.get(`/companies/${id}`),
-      apiClient.get(`/users?companyId=${id}`)
-    ]);
+      apiClient.get('/users', {
+        params: {
+          companyId: id,
+          _page: pageNumber,
+          _per_page: itemsPerPage,
+        },
+      }),
+    ])
 
-    company.value = companyRes.data;
-    users.value = usersRes.data;
+    const duration = Date.now() - startTime
+    const minDelay = 500
+
+    if (duration < minDelay) {
+      await new Promise(resolve => setTimeout(resolve, minDelay - duration))
+    }
+
+    company.value = companyRes.data
+    const { items, data } = usersRes.data
+
+    users.value = data
+    totalItems.value = items
+    currentPage.value = pageNumber
   } catch (err) {
-    toast.error("Erro ao carregar os dados da empresa e usuários.");
+    toast.error('Erro ao carregar os dados da empresa e usuários.')
     toast.info('Redirecionando para a página principal...')
-    setTimeout(() => router.push('/'), 2000);
+    setTimeout(() => router.push('/'), 2000)
   } finally {
-    loading.value = false;
+    loading.value = false
   }
-};
+}
 
 const openDeleteUserModal = (id: string) => {
-  userIdToDelete.value = id;
-  isDeleteModalOpen.value = true;
-};
+  userIdToDelete.value = id
+  isDeleteModalOpen.value = true
+}
 
 const confirmDeleteUser = async () => {
-  if (!userIdToDelete.value) return;
+  if (!userIdToDelete.value) return
 
-  isDeleting.value = true;
+  isDeleting.value = true
   try {
-    await apiClient.delete(`/users/${userIdToDelete.value}`);
-    toast.success("Usuário removido com sucesso.");
-    await fetchData(); // Recarrega a lista de usuários
+    await apiClient.delete(`/users/${userIdToDelete.value}`)
+    toast.success('Usuário removido com sucesso.')
+    await loadCompanyDetailsAndUsers(currentPage.value)
   } catch (err) {
-    toast.error("Erro ao remover usuário.");
+    toast.error('Erro ao remover usuário.')
   } finally {
-    isDeleting.value = false;
-    isDeleteModalOpen.value = false;
-    userIdToDelete.value = null;
+    isDeleting.value = false
+    isDeleteModalOpen.value = false
+    userIdToDelete.value = null
   }
-};
+}
 
 const formatCNPJ = (val: string) => {
-  return val.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, "$1.$2.$3/$4-$5");
-};
+  return val.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5')
+}
 
-onMounted(fetchData);
+watch(currentPage, newPage => {
+  if (!loading.value) loadCompanyDetailsAndUsers(newPage)
+})
+
+onMounted(() => loadCompanyDetailsAndUsers(currentPage.value))
 </script>
 
 <template>
@@ -83,7 +113,9 @@ onMounted(fetchData);
       <div>
         <nav aria-label="breadcrumb">
           <ol class="breadcrumb mb-1">
-            <li class="breadcrumb-item"><a href="#" @click.prevent="router.push('/')">Empresas</a></li>
+            <li class="breadcrumb-item">
+              <a href="#" @click.prevent="router.push('/')">Empresas</a>
+            </li>
             <li class="breadcrumb-item active">Detalhes</li>
           </ol>
         </nav>
@@ -91,14 +123,17 @@ onMounted(fetchData);
           <Building2 class="text-primary" /> Informações da Empresa
         </h2>
       </div>
-      <button class="btn btn-outline-secondary d-flex align-items-center gap-2" @click="router.push('/')">
+      <button
+        class="btn btn-outline-secondary d-flex align-items-center gap-2"
+        @click="router.push('/')"
+      >
         <ArrowLeft :size="18" /> Voltar
       </button>
     </div>
 
-    <div v-if="loading" class="text-center py-5">
-      <div class="spinner-border text-primary" role="status"></div>
-      <p class="mt-2 text-muted">Carregando detalhes...</p>
+    <!-- class="text-center py-5" -->
+    <div v-if="loading">
+      <CompanyDetailsLoading />
     </div>
 
     <template v-else>
@@ -106,12 +141,21 @@ onMounted(fetchData);
         <div class="card-body p-4">
           <div class="row align-items-center">
             <div class="col-md-8">
-              <h3 class="card-title fw-bold text-primary mb-3">{{ company.name }}</h3>
+              <h3 class="card-title fw-bold text-primary mb-3">
+                {{ company.name }}
+              </h3>
               <div class="d-flex gap-4">
-                <p class="mb-0"><strong>CNPJ:</strong> {{ formatCNPJ(company.cnpj) }}</p>
                 <p class="mb-0">
-                  <strong>Status: </strong> 
-                  <span :class="['badge rounded-pill', company.active ? 'bg-success' : 'bg-secondary']">
+                  <strong>CNPJ:</strong> {{ formatCNPJ(company.cnpj) }}
+                </p>
+                <p class="mb-0">
+                  <strong>Status: </strong>
+                  <span
+                    :class="[
+                      'badge rounded-pill',
+                      company.active ? 'bg-success' : 'bg-secondary',
+                    ]"
+                  >
                     {{ company.active ? 'Ativa' : 'Inativa' }}
                   </span>
                 </p>
@@ -121,17 +165,22 @@ onMounted(fetchData);
         </div>
       </div>
 
-      <div class="section-header d-flex justify-content-between align-items-center mb-3">
+      <div
+        class="section-header d-flex justify-content-between align-items-center mb-3"
+      >
         <h4 class="fw-bold d-flex align-items-center gap-2">
           <Users :size="22" /> Usuários Vinculados
         </h4>
-        <button class="btn btn-primary d-flex align-items-center gap-2" @click="showModal = true">
+        <button
+          class="btn btn-primary d-flex align-items-center gap-2"
+          @click="showModal = true"
+        >
           <UserPlus :size="18" /> Adicionar Usuário
         </button>
       </div>
 
       <div class="card shadow-sm border-1">
-        <div class="table-responsive py-1">
+        <div class="table-responsive">
           <table class="table table-hover align-middle mb-0">
             <thead class="table-light">
               <tr>
@@ -146,13 +195,15 @@ onMounted(fetchData);
                 <td class="ps-4 fw-medium">{{ user.name }}</td>
                 <td>{{ user.email }}</td>
                 <td>
-                  <span class="badge bg-light text-dark border">{{ user.role }}</span>
+                  <span class="badge bg-light text-dark border">{{
+                    user.role
+                  }}</span>
                 </td>
                 <td class="text-end pe-4">
-                  <button 
+                  <button
                     title="Remover Usuário"
-                    class="btn btn-outline-danger btn-sm border-1" 
-                    @click="openDeleteUserModal(user.id)" 
+                    class="btn btn-outline-danger btn-sm border-1"
+                    @click="openDeleteUserModal(user.id)"
                   >
                     <Trash2 :size="18" />
                   </button>
@@ -169,21 +220,29 @@ onMounted(fetchData);
       </div>
     </template>
 
-    <UserModal 
-      v-if="showModal && companyId" 
+    <UserModal
+      v-if="showModal && companyId"
       :show="showModal"
-      :companyId="companyId" 
-      @saved="fetchData"
-      @close="showModal = false" 
+      :companyId="companyId"
+      @saved="loadCompanyDetailsAndUsers"
+      @close="showModal = false"
     />
 
-    <CompanyUserDeleteModal 
+    <CompanyUserDeleteModal
       :show="isDeleteModalOpen"
       :loading="isDeleting"
       title="Excluir Usuário"
       message="Tem certeza que deseja excluir este usuário?"
       @confirm="confirmDeleteUser"
       @cancel="isDeleteModalOpen = false"
+    />
+
+    <PaginationBar
+      v-if="totalItems > itemsPerPage"
+      v-model="currentPage"
+      :total-items="totalItems"
+      :items-per-page="itemsPerPage"
+      @change="page => loadCompanyDetailsAndUsers(page)"
     />
   </div>
 </template>
