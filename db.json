@@ -1,19 +1,19 @@
 {
   "companies": [
     {
-      "id": 1,
+      "id": "1",
       "name": "Tech Inovações S.A.",
       "cnpj": "12345678000101",
       "active": true
     },
     {
-      "id": 2,
+      "id": "2",
       "name": "Global Logística",
       "cnpj": "98765432000122",
       "active": true
     },
     {
-      "id": 3,
+      "id": "3",
       "name": "Café Digital Ltda",
       "cnpj": "11222333000144",
       "active": false
@@ -21,58 +21,58 @@
   ],
   "users": [
     {
-      "id": 1,
+      "id": "1",
       "name": "Alice Souza",
       "email": "alice@tech.com",
-      "companyId": 1
+      "companyId": "1"
     },
     {
-      "id": 2,
+      "id": "2",
       "name": "Bruno Silva",
       "email": "bruno@tech.com",
-      "companyId": 1
+      "companyId": "1"
     },
     {
-      "id": 3,
+      "id": "3",
       "name": "Carla Dias",
       "email": "carla@tech.com",
-      "companyId": 1
+      "companyId": "1"
     },
     {
-      "id": 4,
+      "id": "4",
       "name": "Diego Ramos",
       "email": "diego@global.com",
-      "companyId": 2
+      "companyId": "2"
     },
     {
-      "id": 5,
+      "id": "5",
       "name": "Elena Martins",
       "email": "elena@global.com",
-      "companyId": 2
+      "companyId": "2"
     },
     {
-      "id": 6,
+      "id": "6",
       "name": "Fabio Luiz",
       "email": "fabio@global.com",
-      "companyId": 2
+      "companyId": "2"
     },
     {
-      "id": 7,
+      "id": "7",
       "name": "Gisele Rosa",
       "email": "gisele@cafe.com",
-      "companyId": 3
+      "companyId": "3"
     },
     {
-      "id": 8,
+      "id": "8",
       "name": "Hugo Mendes",
       "email": "hugo@cafe.com",
-      "companyId": 3
+      "companyId": "3"
     },
     {
-      "id": 9,
+      "id": "9",
       "name": "Iara Costa",
       "email": "iara@cafe.com",
-      "companyId": 3
+      "companyId": "3"
     }
   ]
 }

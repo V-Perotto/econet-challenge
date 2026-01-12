@@ -1,5 +1,5 @@
 export interface ICompany {
-  id: number
+  id: string
   name: string
   cnpj: string
   active: boolean
