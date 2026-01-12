@@ -21,6 +21,7 @@ Este projeto é um desafio técnico de frontend focado no gerenciamento de empre
 ![vite]
 ![axios]
 ![typescript]
+![json-server]
 
 ## 🚀 Tecnologias Utilizadas
 
@@ -28,6 +29,7 @@ Este projeto é um desafio técnico de frontend focado no gerenciamento de empre
 - Vite (Build tool);
 - Vue Router (Gerenciamento de rotas);
 - Axios (Consumo de API);
+- JSON Server (API Fake).
 
 ## 🛠️ Como rodar o projeto
 
@@ -46,7 +48,17 @@ pnpm install
 
 3. Criar e configurar o `.env` (use o `.env.example` para saber quais variáveis usar)
 
+4. Executar o Backend
+
+Abra em um terminal separado e rode o comando abaixo:
+
+```bash
+pnpm run backend
+```
+
 4. Executar o Frontend
+
+Abra em um terminal separado e rode o comando abaixo:
 
 ```bash
 pnpm run dev
@@ -58,10 +70,13 @@ Acesse a URL exibida no terminal (geralmente http://localhost:5173).
 
 O projeto segue uma estrutura modular para facilitar a manutenção:
 
-- `src/views`: Telas principais (Listagem, Formulário, Detalhes).
-- `src/components`: Componentes reutilizáveis como Modais e Alertas.
+- `src/assets`: Imagens e Favicons.
+- `src/components`: Componentes reutilizáveis como Modais, Alertas e telas de Carregamento.
+- `src/enums`: Conjunto de valores para os Cargos dos Usuários.
+- `src/interfaces`: Interfaces para as classes e atributos de Usuário e Empresa.
 - `src/plugins`: Configurações do Axios.
-- `src/services`: Chamadas de APIs.
+- `src/routers`: Rotas para as telas.
+- `src/views`: Telas principais (Listagem, Formulário, Detalhes).
 
 ## 🧪 O que testar
 
@@ -86,3 +101,4 @@ Ao rodar a aplicação, você pode validar os seguintes fluxos obrigatórios:
 [pnpm]: https://img.shields.io/badge/pnpm-white?logo=pnpm
 [axios]: https://img.shields.io/badge/Axios-white?logo=axios&logoColor=purple
 [vite]: https://img.shields.io/badge/Vite-purple?logo=vite&logoColor=yellow
+[json-server]: https://img.shields.io/badge/JSON%20Server-grey?logo=json&logoColor=yellow
