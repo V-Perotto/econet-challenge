@@ -24,54 +24,63 @@
       "id": "1",
       "name": "Alice Souza",
       "email": "alice@tech.com",
+      "role": "Gerente",
       "companyId": "1"
     },
     {
       "id": "2",
       "name": "Bruno Silva",
       "email": "bruno@tech.com",
+      "role": "Analista",
       "companyId": "1"
     },
     {
       "id": "3",
       "name": "Carla Dias",
       "email": "carla@tech.com",
+      "role": "Administrador",
       "companyId": "1"
     },
     {
       "id": "4",
       "name": "Diego Ramos",
       "email": "diego@global.com",
+      "role": "Gerente",
       "companyId": "2"
     },
     {
       "id": "5",
       "name": "Elena Martins",
       "email": "elena@global.com",
+      "role": "Operador",
       "companyId": "2"
     },
     {
       "id": "6",
       "name": "Fabio Luiz",
       "email": "fabio@global.com",
+      "role": "Administrador",
       "companyId": "2"
     },
     {
       "id": "7",
       "name": "Gisele Rosa",
       "email": "gisele@cafe.com",
+      "role": "Gerente",
       "companyId": "3"
     },
     {
       "id": "8",
       "name": "Hugo Mendes",
       "email": "hugo@cafe.com",
+      "role": "Operador",
       "companyId": "3"
     },
     {
       "id": "9",
       "name": "Iara Costa",
       "email": "iara@cafe.com",
+      "role": "Analista",
       "companyId": "3"
     }
   ]
